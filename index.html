@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Challenge - Game Trí Tuệ</title>
+    <meta name="description" content="Thử thách trí thông minh của bạn với 10 level đầy thú vị! Game trí tuệ Việt Nam.">
+    <meta name="author" content="KhanhLe">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            width: 100%;
+            padding: 30px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        h1 {
+            color: #2575fc;
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #2575fc;
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(37, 117, 252, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .level-info {
+            position: absolute;
+            top: 20px;
+            right: 120px;
+            color: #6a11cb;
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(106, 17, 203, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .question {
+            color: #333;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        .answer-btn {
+            width: 100%;
+            max-width: 400px;
+            margin: 8px;
+            text-align: center;
+        }
+
+        .hint-btn {
+            background: linear-gradient(to right, #ff8c00, #ff2e63);
+            font-size: 16px;
+            padding: 12px 24px;
+            margin-top: 20px;
+        }
+
+        .music-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(37, 117, 252, 0.1);
+            color: #2575fc;
+            padding: 8px 16px;
+            font-size: 14px;
+            min-width: auto;
+        }
+
+        .input-answer {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 500px;
+        }
+
+        .input-char {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #6a11cb;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            background: #fff;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-transform: lowercase;
+        }
+
+        .popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 100;
+            border: 3px solid #6a11cb;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 450px;
+        }
+
+        .answer-hint {
+            color: #6a11cb;
+            font-size: 18px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .level-progress {
+            width: 80%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .level-progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .correct {
+            background: linear-gradient(to right, #00b09b, #96c93d) !important;
+        }
+
+        .wrong {
+            background: linear-gradient(to right, #ff416c, #ff4b2b) !important;
+        }
+        
+        .devtools-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #ff4757;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .congrats {
+            font-size: 24px;
+            color: #6a11cb;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .final-score {
+            font-size: 28px;
+            color: #2575fc;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .rank {
+            font-size: 22px;
+            color: #ff8c00;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .taunt-message {
+            color: #ff4757;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .credit {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            color: white;
+            font-size: 14px;
+            opacity: 0.8;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .share-buttons {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .share-btn {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="devtools-warning" id="devtoolsWarning">
+        ⚠️ Hành động này đã bị vô hiệu hóa!
+    </div>
+
+    <div class="credit">Design by KhanhLe</div>
+
+    <div id="game-container">
+        <div id="main-menu" class="screen active">
+            <h1>🧠 BRAIN CHALLENGE</h1>
+            <p style="color: #555; font-size: 18px; margin-bottom: 40px; text-align: center;">
+                Thử thách trí thông minh của bạn với 10 level đầy thú vị!
+            </p>
+            <button class="btn" onclick="startGame()">BẮT ĐẦU</button>
+            <button class="btn" onclick="toggleMusic()">🔊 Bật nhạc</button>
+            
+            <div class="share-buttons">
+                <a href="#" class="share-btn" onclick="shareGame('facebook')">📘 Chia sẻ Facebook</a>
+                <a href="#" class="share-btn" onclick="shareGame('zalo')">💬 Chia sẻ Zalo</a>
+                <a href="#" class="share-btn" onclick="copyGameLink()">🔗 Sao chép link</a>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="score">Điểm: <span id="score">0</span></div>
+            <div class="level-info">Level <span id="current-level">1</span>/10</div>
+            <button class="btn music-btn" id="music-toggle" onclick="toggleMusic()">🔊 Tắt nhạc</button>
+            
+            <div class="level-progress">
+                <div class="level-progress-bar" id="level-progress-bar"></div>
+            </div>
+            
+            <div class="question" id="question-text"></div>
+            <div class="answer-hint" id="answer-hint"></div>
+            <div id="answers-container"></div>
+            <div id="input-container" style="display: none;"></div>
+            <div id="taunt-message" class="taunt-message"></div>
+            <button class="btn hint-btn" onclick="showHintModal()">💡 Gợi ý</button>
+        </div>
+
+        <div id="end-screen" class="screen">
+            <h1>🎉 CHÚC MỪNG! 🎉</h1>
+            <div class="congrats">Bạn đã hoàn thành tất cả level!</div>
+            <div class="final-score">Điểm số cuối cùng: <span id="final-score">0</span></div>
+            <div class="rank" id="rank-text"></div>
+            
+            <div class="share-buttons">
+                <a href="#" class="share-btn" onclick="shareScore('facebook')">📘 Chia sẻ điểm số</a>
+                <a href="#" class="share-btn" onclick="shareScore('zalo')">💬 Chia sẻ Zalo</a>
+                <a href="#" class="share-btn" onclick="copyScore()">📋 Sao chép kết quả</a>
+            </div>
+            
+            <button class="btn" onclick="restartGame()">Chơi lại</button>
+            <button class="btn" onclick="showMainMenu()">Menu chính</button>
+        </div>
+
+        <audio id="bg-music" loop>
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        // Biến toàn cục
+        let currentScore = 0;
+        let currentLevel = 1;
+        let currentQuestion = null;
+        let purchasedHints = [];
+        let musicEnabled = false;
+        let popupActive = false;
+        const bgMusic = document.getElementById('bg-music');
+        const TOTAL_LEVELS = 10;
+        const HINT_COSTS = [10, 20, 25];
+
+        // Danh sách câu châm biếm khi trả lời sai
+        const tauntMessages = [
+            "Ôi trời ơi! Bạn đùa với tôi à?",
+            "Suy nghĩ kỹ lại đi bạn ơi!",
+            "Hmm... có lẽ bạn cần uống cà phê cho tỉnh táo!",
+            "Thử dùng não đi nào!",
+            "Câu này dễ mà, sao sai được nhỉ?",
+            "Bạn đang ngủ gật à?",
+            "Thôi nào, tập trung lên!",
+            "Cố lên, bạn làm được mà!",
+            "Sai rồi! Thử lại với tư duy khác xem!",
+            "Không phải vậy đâu, suy nghĩ lại đi!"
+        ];
+
+        // Kho câu hỏi
+        const questions = [
+            {
+                type: 'choice',
+                question: "Có 5 quả táo, lấy đi 3 quả, hỏi còn mấy quả?",
+                answers: ["2 quả", "3 quả", "5 quả", "0 quả"],
+                correct: 2,
+                explanation: "Vì chỉ 'lấy đi' chứ không 'ăn', nên vẫn còn 5 quả táo.",
+                hints: [
+                    "Suy nghĩ về ý nghĩa của từ 'lấy đi'",
+                    "Người ta chỉ lấy đi chứ chưa chắc đã ăn",
+                    "Đáp án là 5 quả"
+                ]
+            },
+            {
+                type: 'input',
+                question: "Cái gì bạn có nhưng không bao giờ dùng đến?",
+                answer: "lomui",
+                explanation: "Bạn có lỗ mũi nhưng không bao giờ 'dùng' nó theo nghĩa thông thường.",
+                hints: [
+                    "Nó ở trên mặt bạn",
+                    "Liên quan đến hô hấp",
+                    "Đáp án là 'lomui'"
+                ]
+            },
+            {
+                type: 'choice', 
+                question: "Một người đi vào rừng sâu. Thấy 2 con cọp, 3 con rắn. Hỏi có mấy con mắt?",
+                answers: ["10 con mắt", "12 con mắt", "14 con mắt", "16 con mắt"],
+                correct: 3,
+                explanation: "2 cọp (8 mắt) + 3 rắn (6 mắt) + 1 người (2 mắt) = 16 con mắt.",
+                hints: [
+                    "Đừng quên ai đó đang nhìn thấy chúng",
+                    "Tính cả mắt của người quan sát",
+                    "Đáp án là 16 con mắt"
+                ]
+            },
+            {
+                type: 'input',
+                question: "Cái gì càng kéo càng ngắn?",
+                answer: "dieuthuoc",
+                explanation: "Điếu thuốc càng hút (kéo) thì càng ngắn lại.",
+                hints: [
+                    "Nó liên quan đến thứ người ta hút",
+                    "Khi hút thì nó ngắn lại", 
+                    "Đáp án là 'dieuthuoc'"
+                ]
+            },
+            {
+                type: 'input',
+                question: "Con gì đầu dê mình ốc?",
+                answer: "ocsen",
+                explanation: "Con ốc sên có đầu giống dê và thân là vỏ ốc.",
+                hints: [
+                    "Nó là một loài động vật nhỏ",
+                    "Nó bò rất chậm",
+                    "Đáp án là 'ocsen'"
+                ]
+            },
+            {
+                type: 'input',
+                question: "Cái gì đánh cha, đánh má, đánh anh, đánh chị, đánh em?",
+                answer: "banchaidanhrang",
+                explanation: "Bàn chải đánh răng dùng để 'đánh' răng cho mọi người trong gia đình.",
+                hints: [
+                    "Nó liên quan đến vệ sinh cá nhân",
+                    "Dùng vào buổi sáng và tối",
+                    "Đáp án là 'banchaidanhrang'"
+                ]
+            },
+            {
+                type: 'input',
+                question: "Cái gì của chồng mà vợ thích cầm nhất?",
+                answer: "tien",
+                explanation: "Tiền của chồng là thứ vợ thích cầm nhất.",
+                hints: [
+                    "Liên quan đến tài chính gia đình",
+                    "Ai cũng cần nó",
+                    "Đáp án là 'tien'"
+                ]
+            },
+            {
+                type: 'choice',
+                question: "Cái gì mà khi bạn gọi tên nó, nó biến mất?",
+                answers: ["Sự im lặng", "Bóng tối", "Con ma", "Sự yên tĩnh"],
+                correct: 0,
+                explanation: "Khi bạn gọi tên 'sự im lặng', bạn đã phá vỡ nó.",
+                hints: [
+                    "Nó liên quan đến âm thanh",
+                    "Khi bạn nói đến nó, nó không còn nữa",
+                    "Đáp án là 'Sự im lặng'"
+                ]
+            },
+            {
+                type: 'input',
+                question: "Càng chơi càng ra nước?",
+                answer: "choidauca",
+                explanation: "Chơi đấu cá càng chơi càng ra nước (nước mắt).",
+                hints: [
+                    "Liên quan đến một trò chơi",
+                    "Có chữ 'cá' trong đáp án",
+                    "Đáp án là 'choidauca'"
+                ]
+            },
+            {
+                type: 'choice',
+                question: "Cái gì không đào mà sâu?",
+                answers: ["Biển", "Con sâu", "Lỗ tai", "Hố sâu"],
+                correct: 2,
+                explanation: "Lỗ tai không cần đào mà vẫn sâu.",
+                hints: [
+                    "Nó ở trên cơ thể người",
+                    "Liên quan đến thính giác",
+                    "Đáp án là 'Lỗ tai'"
+                ]
+            }
+        ];
+
+        // Hàm chính
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            currentScore = 0;
+            currentLevel = 1;
+            purchasedHints = [];
+            popupActive = false;
+            updateScore();
+            loadQuestion();
+            showScreen('game-screen');
+            updateProgressBar();
+        }
+
+        function loadQuestion() {
+            purchasedHints = [];
+            currentQuestion = questions[currentLevel - 1];
+            
+            document.getElementById('question-text').textContent = currentQuestion.question;
+            document.getElementById('current-level').textContent = currentLevel;
+            document.getElementById('taunt-message').textContent = '';
+
+            const answersContainer = document.getElementById('answers-container');
+            const inputContainer = document.getElementById('input-container');
+            
+            answersContainer.innerHTML = '';
+            inputContainer.innerHTML = '';
+            inputContainer.style.display = 'none';
+
+            if (currentQuestion.type === 'choice') {
+                document.getElementById('answer-hint').textContent = '';
+                currentQuestion.answers.forEach((answer, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'btn answer-btn';
+                    button.textContent = answer;
+                    button.onclick = () => checkChoiceAnswer(index);
+                    answersContainer.appendChild(button);
+                });
+                answersContainer.style.display = 'block';
+            } else {
+                const answerLength = currentQuestion.answer.replace(/\s/g, '').length;
+                document.getElementById('answer-hint').textContent = `Gợi ý: ${answerLength} chữ cái`;
+                answersContainer.style.display = 'none';
+                inputContainer.style.display = 'block';
+                createInputFields();
+            }
+            
+            updateProgressBar();
+        }
+
+        function createInputFields() {
+            const inputContainer = document.getElementById('input-container');
+            inputContainer.innerHTML = '';
+            
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'input-answer';
+            
+            for (let i = 0; i < currentQuestion.answer.length; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.className = 'input-char';
+                input.dataset.index = i;
+                
+                input.addEventListener('input', function(e) {
+                    if (this.value.length > 1) {
+                        this.value = this.value.slice(0, 1);
+                    }
+                    
+                    if (this.value.length === 1) {
+                        const nextIndex = parseInt(this.dataset.index) + 1;
+                        const nextInput = document.querySelector(`.input-char[data-index="${nextIndex}"]`);
+                        if (nextInput) {
+                            nextInput.focus();
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '') {
+                        const prevIndex = parseInt(this.dataset.index) - 1;
+                        const prevInput = document.querySelector(`.input-char[data-index="${prevIndex}"]`);
+                        if (prevInput) {
+                            prevInput.focus();
+                        }
+                    }
+                    
+                    if (e.key === 'Enter' && !popupActive) {
+                        checkInputAnswer();
+                    }
+                });
+                
+                inputDiv.appendChild(input);
+            }
+            
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'btn';
+            submitBtn.textContent = 'Kiểm tra';
+            submitBtn.onclick = checkInputAnswer;
+            
+            inputContainer.appendChild(inputDiv);
+            inputContainer.appendChild(submitBtn);
+            
+            const firstInput = inputDiv.querySelector('.input-char');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }
+
+        function checkChoiceAnswer(selectedIndex) {
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === currentQuestion.correct) {
+                buttons[selectedIndex].classList.add('correct');
+                currentScore += 10;
+                updateScore();
+                setTimeout(() => {
+                    showCorrectPopup();
+                }, 1000);
+            } else {
+                buttons[selectedIndex].classList.add('wrong');
+                
+                const randomTaunt = tauntMessages[Math.floor(Math.random() * tauntMessages.length)];
+                document.getElementById('taunt-message').textContent = randomTaunt;
+                
+                setTimeout(() => {
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('wrong');
+                    });
+                    document.getElementById('taunt-message').textContent = '';
+                }, 2000);
+            }
+        }
+
+        function checkInputAnswer() {
+            const inputs = document.querySelectorAll('.input-char');
+            let userAnswer = '';
+            inputs.forEach(input => userAnswer += input.value.toLowerCase());
+
+            if (normalizeText(userAnswer) === normalizeText(currentQuestion.answer)) {
+                inputs.forEach(input => input.classList.add('correct'));
+                currentScore += 10;
+                updateScore();
+                setTimeout(() => {
+                    showCorrectPopup();
+                }, 1000);
+            } else {
+                inputs.forEach(input => input.classList.add('wrong'));
+                
+                const randomTaunt = tauntMessages[Math.floor(Math.random() * tauntMessages.length)];
+                document.getElementById('taunt-message').textContent = randomTaunt;
+                
+                setTimeout(() => {
+                    inputs.forEach(input => {
+                        input.classList.remove('wrong');
+                        input.value = '';
+                    });
+                    document.getElementById('taunt-message').textContent = '';
+                    
+                    const firstInput = document.querySelector('.input-char[data-index="0"]');
+                    if (firstInput) {
+                        firstInput.focus();
+                    }
+                }, 2000);
+            }
+        }
+
+        function normalizeText(str) {
+            return str.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/Đ/g, "D")
+                .toLowerCase()
+                .replace(/\s+/g, '')
+                .trim();
+        }
+
+        function showCorrectPopup() {
+            popupActive = true;
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            
+            if (currentLevel >= TOTAL_LEVELS) {
+                popup.innerHTML = `
+                    <h3>🎉 CHÍNH XÁC! +10 điểm</h3>
+                    <div class="explanation">${currentQuestion.explanation}</div>
+                    <button class="btn" onclick="completeGame()">Kết thúc game</button>
+                `;
+            } else {
+                popup.innerHTML = `
+                    <h3>🎉 CHÍNH XÁC! +10 điểm</h3>
+                    <div class="explanation">${currentQuestion.explanation}</div>
+                    <button class="btn" onclick="nextLevel()">Level tiếp theo →</button>
+                `;
+            }
+            
+            document.getElementById('game-screen').appendChild(popup);
+        }
+
+        function nextLevel() {
+            document.querySelector('.popup')?.remove();
+            popupActive = false;
+            currentLevel++;
+            loadQuestion();
+        }
+
+        function completeGame() {
+            document.querySelector('.popup')?.remove();
+            document.getElementById('final-score').textContent = currentScore;
+            
+            let rankText = '';
+            if (currentScore >= 90) {
+                rankText = '🏆 BẬC THẦY TRÍ TUỆ 🏆';
+            } else if (currentScore >= 70) {
+                rankText = '🎯 THÔNG MINH XUẤT CHÚNG 🎯';
+            } else if (currentScore >= 50) {
+                rankText = '⭐ KHÁ GIỎI ⭐';
+            } else {
+                rankText = '💡 CỐ GẮNG HƠN NỮA NHÉ! 💡';
+            }
+            document.getElementById('rank-text').textContent = rankText;
+            
+            showScreen('end-screen');
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        function showMainMenu() {
+            showScreen('main-menu');
+        }
+
+        function updateProgressBar() {
+            const progress = (currentLevel - 1) / TOTAL_LEVELS * 100;
+            document.getElementById('level-progress-bar').style.width = `${progress}%`;
+        }
+
+        function showHintModal() {
+            const modal = document.createElement('div');
+            modal.className = 'popup';
+            modal.style.width = '500px';
+            
+            let hintHTML = '<h3>💡 Mua Gợi ý</h3><div style="text-align: left; margin: 20px 0;">';
+            
+            currentQuestion.hints.forEach((hint, index) => {
+                const isPurchased = purchasedHints.includes(index);
+                const canPurchase = index === purchasedHints.length;
+                const hintCost = HINT_COSTS[index];
+                
+                hintHTML += `
+                    <div style="margin: 12px 0; padding: 12px; border: 1px solid #ff8c00; border-radius: 10px; cursor: ${canPurchase ? 'pointer' : 'default'}; background: ${isPurchased ? '#f0fff0' : '#fff'};" 
+                         ${canPurchase && !isPurchased ? `onclick="purchaseHint(${index})"` : ''}>
+                        <strong>Gợi ý ${index + 1}</strong>
+                        <span style="float: right; color: #ff2e63; font-weight: bold;">
+                            ${isPurchased ? 'Đã mua' : `-${hintCost} điểm`}
+                        </span>
+                        <div style="margin-top: 8px;">
+                            ${isPurchased ? hint : (canPurchase ? '??? (Click để mua)' : '??? (Mua gợi ý trước)')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            hintHTML += '</div><button class="btn" onclick="this.parentElement.remove()">Đóng</button>';
+            modal.innerHTML = hintHTML;
+            document.getElementById('game-screen').appendChild(modal);
+        }
+
+        function purchaseHint(hintIndex) {
+            if (purchasedHints.includes(hintIndex)) return;
+            
+            const hintCost = HINT_COSTS[hintIndex];
+            if (currentScore >= hintCost) {
+                currentScore -= hintCost;
+                updateScore();
+                purchasedHints.push(hintIndex);
+                document.querySelector('.popup')?.remove();
+                showHintModal();
+            } else {
+                alert(`Không đủ điểm! Cần ${hintCost} điểm.`);
+            }
+        }
+
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            const button = document.getElementById('music-toggle');
+            if (musicEnabled) {
+                bgMusic.play().catch(e => console.log('Lỗi phát nhạc:', e));
+                button.textContent = "🔊 Tắt nhạc";
+            } else {
+                bgMusic.pause();
+                button.textContent = "🔇 Bật nhạc";
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = currentScore;
+        }
+
+        // Chức năng chia sẻ
+        function shareGame(platform) {
+            const gameUrl = window.location.href;
+            const message = "🎮 Thử thách trí tuệ Brain Challenge! Bạn có dám thử không?";
+            
+            let shareUrl = '';
+            switch(platform) {
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(gameUrl)}`;
+                    break;
+                case 'zalo':
+                    shareUrl = `https://zalo.me/share?text=${encodeURIComponent(message + ' ' + gameUrl)}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+
+        function shareScore(platform) {
+            const gameUrl = window.location.href;
+            const message = `🎉 Tôi vừa đạt ${currentScore} điểm trong Brain Challenge! Bạn có thể làm tốt hơn không? ${gameUrl}`;
+            
+            let shareUrl = '';
+            switch(platform) {
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(gameUrl)}&quote=${encodeURIComponent(message)}`;
+                    break;
+                case 'zalo':
+                    shareUrl = `https://zalo.me/share?text=${encodeURIComponent(message)}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+
+        function copyGameLink() {
+            const gameUrl = window.location.href;
+            navigator.clipboard.writeText(gameUrl).then(() => {
+                alert('✅ Đã sao chép link game!');
+            });
+        }
+
+        function copyScore() {
+            const message = `🎉 Tôi vừa đạt ${currentScore} điểm trong Brain Challenge! ${window.location.href}`;
+            navigator.clipboard.writeText(message).then(() => {
+                alert('✅ Đã sao chép kết quả!');
+            });
+        }
+
+        // Bảo vệ chống F12 và DevTools
+        function protectCode() {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12' || 
+                    (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                    (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                    (e.ctrlKey && e.key === 'U') ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'C')) {
+                    e.preventDefault();
+                    document.getElementById('devtoolsWarning').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('devtoolsWarning').style.display = 'none';
+                    }, 2000);
+                    return false;
+                }
+            });
+            
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                document.getElementById('devtoolsWarning').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('devtoolsWarning').style.display = 'none';
+                }, 2000);
+                return false;
+            });
+            
+            setInterval(function() {
+                const threshold = 160;
+                const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+                const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+                
+                if (widthThreshold || heightThreshold) {
+                    document.getElementById('devtoolsWarning').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('devtoolsWarning').style.display = 'none';
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        // Khởi tạo
+        window.onload = function() {
+            updateScore();
+            protectCode();
+        };
+    </script>
+</body>
+</html>
